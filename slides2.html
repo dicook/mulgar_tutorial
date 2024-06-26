@@ -10,7 +10,7 @@
 <link href="slides2_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.4.549">
 
-  <meta name="author" content="Dianne Cook   Monash University">
+  <meta name="author" content="Dianne Cook, Monash University   Ursula Laa, BOKU">
   <title>Visualising High-dimensional Data with R</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -386,8 +386,8 @@
       margin-right: 0; 
     }
   </style>
-  <link href="slides2_files/libs/countdown-0.5.0/countdown.css" rel="stylesheet">
-  <script src="slides2_files/libs/countdown-0.5.0/countdown.js"></script>
+  <link href="slides2_files/libs/countdown-0.4.0/countdown.css" rel="stylesheet">
+  <script src="slides2_files/libs/countdown-0.4.0/countdown.js"></script>
 </head>
 <body class="quarto-light">
   <div class="reveal">
@@ -395,11 +395,12 @@
 
 <section id="title-slide" class="quarto-title-block center">
   <h1 class="title">Visualising High-dimensional Data with R</h1>
+  <p class="subtitle">Session 2</p>
 
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
 <div class="quarto-title-author-name">
-Dianne Cook <br> Monash University 
+Dianne Cook, Monash University <br> Ursula Laa, BOKU 
 </div>
 </div>
 </div>
@@ -614,7 +615,7 @@ bm 754.7 318.4 1751.2 211467</code></pre>
 <section id="your-turn" class="slide level2">
 <h2><span class="orange2">Your turn</span></h2>
 <p>Use the spin-and-brush approach to extract the clusters from the <code>c1</code> data.</p>
-<p></p><div class="countdown" id="timer_0c87a29f" data-update-every="1" tabindex="0" style="right:0;bottom:0;"> <div class="countdown-controls"><button class="countdown-bump-down">−</button><button class="countdown-bump-up">+</button></div> <code class="countdown-time"><span class="countdown-digits minutes">05</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code> </div><p></p>
+<p></p><div class="countdown" id="timer_8fd852e4" data-update-every="1" tabindex="0" style="right:0;bottom:0;"> <div class="countdown-controls"><button class="countdown-bump-down">−</button><button class="countdown-bump-up">+</button></div> <code class="countdown-time"><span class="countdown-digits minutes">05</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code> </div><p></p>
 </section>
 <section id="classification" class="slide level2 transition center">
 <h2>Classification</h2>
@@ -746,8 +747,8 @@ Votes matrix for the random forest fit on penguins
 <span id="cb9-4"><a href="" aria-hidden="true" tabindex="-1"></a>p_cl <span class="ot">&lt;-</span> p_tidy_std <span class="sc">|&gt;</span></span>
 <span id="cb9-5"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pspecies =</span> <span class="fu">predict</span>(p_lda, p_tidy_std)<span class="sc">$</span>class) <span class="sc">|&gt;</span></span>
 <span id="cb9-6"><a href="" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(bl<span class="sc">:</span>bm, species, pspecies) <span class="sc">|&gt;</span></span>
-<span id="cb9-7"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sp_jit =</span> <span class="fu">jitter</span>(<span class="fu">as.numeric</span>(species)),</span>
-<span id="cb9-8"><a href="" aria-hidden="true" tabindex="-1"></a>         <span class="at">psp_jit =</span> <span class="fu">jitter</span>(<span class="fu">as.numeric</span>(pspecies)))</span>
+<span id="cb9-7"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sp_jit =</span> <span class="fu">jitter</span>(<span class="fu">as.numeric</span>(species), <span class="fl">0.5</span>),</span>
+<span id="cb9-8"><a href="" aria-hidden="true" tabindex="-1"></a>         <span class="at">psp_jit =</span> <span class="fu">jitter</span>(<span class="fu">as.numeric</span>(pspecies), <span class="fl">0.5</span>))</span>
 <span id="cb9-9"><a href="" aria-hidden="true" tabindex="-1"></a>p_cl_shared <span class="ot">&lt;-</span> SharedData<span class="sc">$</span><span class="fu">new</span>(p_cl)</span>
 <span id="cb9-10"><a href="" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-11"><a href="" aria-hidden="true" tabindex="-1"></a>detour_plot <span class="ot">&lt;-</span> <span class="fu">detour</span>(p_cl_shared, <span class="fu">tour_aes</span>(</span>
@@ -783,7 +784,7 @@ DEMO
 <section id="your-turn-1" class="slide level2">
 <h2><span class="orange2">Your turn</span></h2>
 <p>Explore the misclassifications in the <span class="orange2">random forest fit</span> of the <span class="orange2">penguins</span> data, using the code provided in the <code>slides2.R</code> file.</p>
-<p></p><div class="countdown" id="timer_c876e9c7" data-update-every="1" tabindex="0" style="right:0;bottom:0;"> <div class="countdown-controls"><button class="countdown-bump-down">−</button><button class="countdown-bump-up">+</button></div> <code class="countdown-time"><span class="countdown-digits minutes">05</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code> </div><p></p>
+<p></p><div class="countdown" id="timer_61fe7d36" data-update-every="1" tabindex="0" style="right:0;bottom:0;"> <div class="countdown-controls"><button class="countdown-bump-down">−</button><button class="countdown-bump-up">+</button></div> <code class="countdown-time"><span class="countdown-digits minutes">05</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code> </div><p></p>
 </section>
 <section id="cautions-about-high-dimensions" class="slide level2">
 <h2>Cautions about high-dimensions</h2>
@@ -849,7 +850,7 @@ DEMO
 <p><a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png"></a><br>This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.</p>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
-<p><a href="https://statsocaus.github.io/tutorial_highd_vis/">https://statsocaus.github.io/tutorial_highd_vis/</a></p>
+<p><a href="https://dicook.github.io/mulgar_tutorial/">https://dicook.github.io/mulgar_tutorial/</a></p>
 </div>
 </div>
 </section>

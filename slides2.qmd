@@ -1,17 +1,18 @@
 ---
 title: "Visualising High-dimensional Data with R"
-author: "Dianne Cook <br> Monash University"
+subtitle: "Session 2"
+author: "Dianne Cook, Monash University <br>  Ursula Laa, BOKU"
 format:
   revealjs: 
     theme: 
-    - default
+      - default
       - custom.scss
     slide-number: c/t
     chalkboard: true
 code-line-numbers: false
 message: false
 highlight-style: pygments
-footer: "[https://statsocaus.github.io/tutorial_highd_vis/](https://statsocaus.github.io/tutorial_highd_vis/)"
+footer: "[https://dicook.github.io/mulgar_tutorial/](https://dicook.github.io/mulgar_tutorial/)"
 ---
 
 ```{r, include = FALSE}
