@@ -1,5 +1,9 @@
 # Tutorial on high-dimensional visualisation
 
+<img src="mulgar.png" align="right" width="150" />
+
+Website: [https://dicook.github.io/mulgar_tutorial](https://dicook.github.io/mulgar_tutorial)
+
 This is for scientists and data science practitioners who regularly work with high-dimensional data and models and are interested in learning how to better visualise them. You will learn about recognising structure in high-dimensional data, including clusters, outliers, non-linear relationships, and how this can be used with methods such as supervised classification, cluster analysis and non-linear dimension reduction. 
 
 Background: Participants should have a good working knowledge of R, and some background in multivariate statistical methods and/or data mining techniques.
@@ -44,9 +48,9 @@ Ideally, you install this package from GitHub:
 remotes::install_github("casperhart/detourr")
 ```
 
-2. Download the [Zip file of materials](https://statsocaus.github.io/tutorial_highd_vis/tutorial.zip) to your laptop, and unzip it. 
+2. Download the [Zip file of materials](https://dicook.github.io/mulgar_tutorial/tutorial.zip) to your laptop, and unzip it. 
 
-3. Download just the R scripts, [slides1.R](https://statsocaus.github.io/tutorial_highd_vis/slides1.R), [slides2.R](https://statsocaus.github.io/tutorial_highd_vis/slides2.R)
+3. Download just the R scripts, [slides1.R](https://dicook.github.io/mulgar_tutorial/slides1.R), [slides2.R](https://dicook.github.io/mulgar_tutorial/slides2.R)
 
 4. Open your RStudio be clicking on `tutorial.Rproj`. 
 
