@@ -10,9 +10,9 @@ Background: Participants should have a good working knowledge of R, and some bac
 
 **Presenters**: 
 
-Dianne Cook is Professor of Statistics at Monash University in Melbourne, Australia.  She is a world leader in data visualisation, especially the visualisation of high-dimensional data using tours with low-dimensional projections, and projection pursuit.  She also works on bridging the gap between exploratory graphics and statistical inference.  Di is a Fellow of the American Statistical Association, past editor of the Journal of Computational and Graphical Statistics, and the R Journal, elected Ordinary Member of the R Foundation, and elected member of the International Statistical Institute.
+Dianne Cook is Professor of Statistics at Monash University in Melbourne, Australia. Her research is on visualisation of high-dimensional data, and on bridging the gap between exploratory graphics and statistical inference. She is a Fellow of the American Statistical Association, past editor of the Journal of Computational and Graphical Statistics, and the R Journal, Member of the R Foundation, and elected member of the International Statistical Institute, and author of several R packages.
 
-Ursula Laa is
+Ursula Laa is an Assistant Professor at the Institute of Statistics of the University of Natural Resources and Life Sciences in Vienna. She works on new methods for the visualization of multivariate data and models, and on interdisciplinary applications of statistics and data science methods in different fields.
 
 
 ## Structure of tutorial
