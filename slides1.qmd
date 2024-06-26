@@ -1,0 +1,1103 @@
+---
+title: "Visualising High-dimensional Data with R"
+author: "Dianne Cook <br> Monash University"
+format:
+  revealjs: 
+    theme: 
+      - default
+      - custom.scss
+    slide-number: c/t
+    chalkboard: true
+code-line-numbers: false
+message: false
+highlight-style: pygments
+footer: "[https://statsocaus.github.io/tutorial_highd_vis/](https://statsocaus.github.io/tutorial_highd_vis/)"
+---
+
+```{r, include = FALSE}
+#| label: libraries-for-participants
+library(tidyverse)
+library(colorspace)
+library(patchwork)
+library(broom)
+library(palmerpenguins)
+library(GGally)
+library(mulgar)
+library(conflicted)
+library(countdown)
+```
+
+```{r, include = FALSE}
+#| label: code-for-nice-slides
+options(width = 60, digits=2)
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.height = 6,
+  fig.align = "center",
+  dev.args = list(bg = 'transparent'),
+  out.width = "100%",
+  fig.retina = 3,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  cache = FALSE
+)
+theme_set(theme_bw(base_size = 14) +
+   theme(
+     aspect.ratio = 1,
+     plot.background = element_rect(fill = 'transparent', colour = NA),
+     plot.title.position = "plot",
+     plot.title = element_text(size = 14),
+     panel.background = element_rect(fill = 'transparent', colour = NA),
+     legend.background = element_rect(fill = 'transparent', colour = NA),
+     legend.key = element_rect(fill = 'transparent', colour = NA)
+   )
+)
+conflicts_prefer(dplyr::filter)
+conflicts_prefer(dplyr::select)
+conflicts_prefer(dplyr::slice)
+conflicts_prefer(palmerpenguins::penguins)
+conflicts_prefer(tourr::flea)
+
+p_tidy <- penguins |>
+  select(species, bill_length_mm:body_mass_g) |>
+  rename(bl=bill_length_mm,
+         bd=bill_depth_mm,
+         fl=flipper_length_mm,
+         bm=body_mass_g) |>
+  na.omit()
+p_tidy_std <- p_tidy |>
+  mutate_if(is.numeric, function(x) (x-mean(x))/sd(x))
+```
+
+## Session 1  {.transition .center .center-align}
+
+## Outline
+
+```{r echo=FALSE}
+plan <- tribble(~time, ~topic,
+                "1:00-1:20", "Introduction: What is high-dimensional data, why visualise and overview of methods",
+                "1:20-1:45", "Basics of linear projections, and recognising high-d structure", 
+                "1:45-2:30", "Effectively reducing your data dimension, in association with non-linear dimension reduction",
+                "2:30-3:00", "BREAK")
+knitr::kable(plan)
+```
+
+## Introduction {.transition .center .center-align}
+
+## What is high-dimensional space?
+
+<center>
+<img src="https://dicook.github.io/mulgar_book/1-intro_files/figure-html/fig-dimension-cubes-1.png" width="90%">
+</center>
+
+Increasing dimension adds an additional orthogonal axis. 
+
+::: {.fragment .f50}
+If you want more high-dimensional shapes there is an R package, [geozoo](http://schloerke.com/geozoo/all/), which will generate cubes, spheres, simplices, mobius strips, torii, boy surface, klein bottles, cones, various polytopes, ... 
+
+And read or watch [Flatland: A Romance of Many Dimensions (1884) Edwin Abbott](https://en.wikipedia.org/wiki/Flatland). 
+:::
+
+## Notation: Data
+
+\begin{eqnarray*}
+X_{~n\times p} =
+[X_{~1}~X_{~2}~\dots~X_{~p}]_{~n\times p} = \left[ \begin{array}{cccc}
+x_{~11} & x_{~12} & \dots & x_{~1p} \\
+x_{~21} & x_{~22} & \dots & x_{~2p}\\
+\vdots & \vdots &  & \vdots \\
+x_{~n1} & x_{~n2} & \dots & x_{~np} \end{array} \right]_{~n\times p}
+\end{eqnarray*}
+
+## Notation: Projection
+
+\begin{eqnarray*}
+A_{~p\times d} = \left[ \begin{array}{cccc}
+a_{~11} & a_{~12} & \dots & a_{~1d} \\
+a_{~21} & a_{~22} & \dots & a_{~2d}\\
+\vdots & \vdots &  & \vdots \\
+a_{~p1} & a_{~p2} & \dots & a_{~pd} \end{array} \right]_{~p\times d}
+\end{eqnarray*}
+
+## Notation: Projected data
+
+
+
+\begin{eqnarray*}
+Y_{~n\times d} = XA = \left[ \begin{array}{cccc}
+y_{~11} & y_{~12} & \dots & y_{~1d} \\
+y_{~21} & y_{~22} & \dots & y_{~2d}\\
+\vdots & \vdots &  & \vdots \\
+y_{~n1} & y_{~n2} & \dots & y_{~nd} \end{array} \right]_{~n\times d}
+\end{eqnarray*}
+
+## Why? [(1/2)]{.f70}
+
+:::: {.columns}
+::: {.column}
+
+<br>
+Scatterplot matrix
+
+<br><br>
+Here, we see [linear association]{.blue2}, [clumping]{.blue2} and [clustering]{.blue2}, potentially some [outliers]{.blue2}.
+:::
+::: {.column}
+```{r}
+#| label: load-penguins
+#| fig-width: 4
+#| fig-height: 4
+#| echo: false
+library(palmerpenguins)
+p_tidy <- penguins |>
+  select(species, bill_length_mm:body_mass_g) |>
+  rename(bl=bill_length_mm,
+         bd=bill_depth_mm,
+         fl=flipper_length_mm,
+         bm=body_mass_g) 
+ggpairs(p_tidy, columns=2:5) +
+  theme(axis.text = element_blank())
+```
+:::
+:::
+
+## Why? [(2/2)]{.f70}
+
+```{r}
+#| code-fold: true
+#| echo: false
+#| label: hiding
+set.seed(946)
+d <- tibble(x1=runif(200, -1, 1), 
+            x2=runif(200, -1, 1), 
+            x3=runif(200, -1, 1))
+d <- d %>%
+  mutate(x4 = x3 + runif(200, -0.1, 0.1))
+d <- bind_rows(d, c(x1=0, x2=0, x3=-0.5, x4=0.5))
+
+d_r <- d %>%
+  mutate(x1 = cos(pi/6)*x1 + sin(pi/6)*x3,
+         x3 = -sin(pi/6)*x1 + cos(pi/6)*x3,
+         x2 = cos(pi/6)*x2 + sin(pi/6)*x4,
+         x4 = -sin(pi/6)*x2 + cos(pi/6)*x4)
+
+```
+
+
+::::: {.columns}
+
+::: {.column width=50%}
+
+```{r}
+#| label: visible
+#| fig-width: 4
+#| fig-height: 4
+#| out-width: 80%
+#| echo: false
+ggpairs(d) +
+  theme(axis.text = element_blank())
+```
+
+:::
+
+::: {.column width=50%}
+
+```{r}
+#| label: invisible
+#| fig-width: 4
+#| fig-height: 4
+#| out-width: 80%
+#| echo: false
+ggpairs(d_r) +
+  theme(axis.text = element_blank())
+```
+
+:::
+::::
+
+::: {style="font-size: 80%;"}
+There is an outlier in the data on the right, like the one in the left, but it is [hidden in a combination of variables]{.orange2}. It's not visible in any pair of variables.
+:::
+
+
+```{r}
+#| eval: false
+#| echo: false
+# Code to make the plots
+ggscatmat(d)
+animate_xy(d)
+render_gif(d,
+           grand_tour(),
+           display_xy(
+             axes="bottomleft", cex=2.5),
+           gif_file = "gifs/anomaly1.gif",
+           start = basis_random(4, 2),
+           apf = 1/60,
+           frames = 1500,
+           width = 500, 
+           height = 400)
+ggscatmat(d_r)
+animate_xy(d_r)
+render_gif(d_r,
+           grand_tour(),
+           display_xy(
+             axes="bottomleft", cex=2.5),
+           gif_file = "gifs/anomaly2.gif",
+           start = basis_random(4, 2),
+           apf = 1/60,
+           frames = 1500,
+           width = 500, 
+           height = 400)
+
+dsq <- tibble(x1=runif(200, -1, 1), 
+            x2=runif(200, -1, 1), 
+            x3=runif(200, -1, 1))
+dsq <- dsq %>%
+  mutate(x4 = x3^2 + runif(200, -0.1, 0.1))
+dsq <- bind_rows(dsq, c(x1=0, x2=0, x3=0, x4=1.1))
+dsq <- bind_rows(dsq, c(x1=0, x2=0, x3=0.1, x4=1.05))
+dsq <- bind_rows(dsq, c(x1=0, x2=0, x3=-0.1, x4=1.0))
+ggscatmat(dsq)
+animate_xy(dsq, axes="bottomleft")
+dsq_r <- dsq %>%
+  mutate(x1 = cos(pi/6)*x1 + sin(pi/6)*x3,
+         x3 = -sin(pi/6)*x1 + cos(pi/6)*x3,
+         x2 = cos(pi/6)*x2 + sin(pi/6)*x4,
+         x4 = -sin(pi/6)*x2 + cos(pi/6)*x4)
+ggscatmat(dsq_r)
+animate_xy(dsq_r, axes="bottomleft")
+```
+
+## And help to see the data as a whole
+
+:::: {.columns}
+::: {.column}
+To avoid misinterpretation ...
+
+![](images/elephant-guided.png){width=500 fig-align="center"}
+:::
+
+::: {.column}
+... see the bigger picture!
+
+![](images/elephant-grand.png){width=500 fig-align="center"}
+:::
+::::
+
+::: {.f50}
+Image: [Sketchplanations](https://sketchplanations.com/the-overview-effect).
+:::
+
+## Tours of linear projections
+
+:::: {.columns}
+
+::: {.column width="60%" style="font-size: 50%;" .center}
+
+
+![](gifs/explain_1d.gif){width=500 fig-alt="1D tour of 2D data. Data has two clusters, we see bimodal density in some 1D projections."}
+
+<center>
+Data is 2D: $~~p=2$
+
+Projection is 1D: $~~d=1$
+</center>
+
+\begin{eqnarray*}
+A_{~2\times 1} = \left[ \begin{array}{c}
+a_{~11} \\
+a_{~21}\\
+\end{array} \right]_{~2\times 1}
+\end{eqnarray*}
+
+:::
+
+::: {.column width="30%" style="font-size: 70%;"}
+
+
+::: {.fragment} 
+
+<br>
+Notice that the values of $A$ change between (-1, 1). All possible values being shown during the tour.
+
+![](images/explain_1d_axes_1_0.jpg){width="30%"}
+![](images/explain_1d_axes_7_7.jpg){width="30%"}
+![](images/explain_1d_axes_-7_7.jpg){width="30%"}
+
+<span style="font-size: 50%;">
+\begin{eqnarray*}
+A = \left[ \begin{array}{c}
+1 \\
+0\\
+\end{array} \right]
+~~~~~~~~~~~~~~~~
+A = \left[ \begin{array}{c}
+0.7 \\
+0.7\\
+\end{array} \right]
+~~~~~~~~~~~~~~~~
+A = \left[ \begin{array}{c}
+0.7 \\
+-0.7\\
+\end{array} \right]
+
+\end{eqnarray*}
+
+:::
+
+::: {.fragment} 
+<br>
+watching the 1D shadows we can see:
+
+- unimodality 
+- bimodality, there are two clusters.
+
+:::
+
+::: {.fragment} 
+<span style="color:#EC5C00"> What does the 2D data look like? Can you sketch it? </span>
+:::
+
+:::
+
+::::
+
+## Tours of linear projections {visibility="uncounted"}
+
+:::: {.columns}
+
+::: {.column width="60%"}
+
+```{r}
+#| echo: false
+#| fig-width: 4
+#| fig-height: 4
+#| out-width: 70%
+#| fig-alt: "Scatterplot showing the 2D data having two clusters."
+data("simple_clusters")
+
+ggplot(simple_clusters, aes(x=x1, y=x2)) +
+  geom_point(size=2, alpha=0.8, colour="#EC5C00") 
+```
+
+:::
+
+::: {.column width="30%"}
+
+<br><br>
+<span style="color:#EC5C00"> &longleftarrow; 
+<br>
+The 2D data </span>
+
+::: {.fragment} 
+
+
+![](images/explain_1d_annotated.png){fig-alt="2D two cluster data with lines marking particular 1D projections, with small plots showing the corresponding 1D density."}
+
+:::
+
+:::
+
+::::
+
+
+## Tours of linear projections
+
+:::: {.columns}
+
+::: {.column width="60%" style="font-size: 50%;" .center}
+
+```{r}
+#| echo: false
+#| eval: false
+library(tourr)
+library(geozoo)
+set.seed(1351)
+d <- torus(3, n=4304)$points
+d <- apply(d, 2, function(x) (x-mean(x))/sd(x))
+colnames(d) <- paste0("x", 1:3)
+d <- data.frame(d)
+animate_xy(d, axes="bottomleft")
+animate_slice(d, axes="bottomleft")
+set.seed(606)
+path_t2 <- save_history(d, little_tour(), 4)
+render_gif(d, 
+           planned_tour(path_t2),
+           display_xy(col="#EC5C00",
+             half_range=3,
+             axes="bottomleft"),
+           gif_file = "gifs/torus.gif",
+           apf = 1/75,
+           frames = 1000,
+           width = 400, 
+           height = 300)
+render_gif(d, 
+           planned_tour(path_t2),
+           display_slice(col="#EC5C00",
+             half_range=3,
+             axes="bottomleft"),
+           gif_file = "gifs/torus_slice.gif",
+           apf = 1/75,
+           frames = 1000,
+           width = 400, 
+           height = 300)
+```
+
+![](gifs/explain_2d.gif){width=500 fig-alt="Grand tour showing points on the surface of a 3D torus."}
+
+Data is 3D: $p=3$
+
+Projection is 2D: $d=2$
+
+\begin{eqnarray*}
+A_{~3\times 2} = \left[ \begin{array}{cc}
+a_{~11} & a_{~12} \\
+a_{~21} & a_{~22}\\
+a_{~31} & a_{~32}\\
+\end{array} \right]_{~3\times 2}
+\end{eqnarray*}
+
+:::
+
+::: {.column width="30%" style="font-size: 70%;"}
+
+
+::: {.fragment} 
+
+<br><br><br><br><br><br>
+Notice that the values of $A$ change between (-1, 1). All possible values being shown during the tour.
+
+:::
+
+::: {.fragment} 
+
+See: 
+
+- circular shapes
+- some transparency, reveals middle
+- hole in in some projections 
+- no clustering
+
+:::
+
+:::
+
+::::
+
+## Tours of linear projections
+
+```{r}
+#| echo: false
+penguins <- penguins %>%
+  na.omit() # 11 observations out of 344 removed
+# use only vars of interest, and standardise
+# them for easier interpretation
+penguins_sub <- penguins %>% 
+  select(bill_length_mm,
+         bill_depth_mm,
+         flipper_length_mm,
+         body_mass_g,
+         species, 
+         sex) %>% 
+  mutate(across(where(is.numeric),  ~ scale(.)[,1])) %>%
+  rename(bl = bill_length_mm,
+         bd = bill_depth_mm,
+         fl = flipper_length_mm,
+         bm = body_mass_g)
+```
+
+```{r}
+#| eval: false
+#| echo: false
+set.seed(645)
+render_gif(penguins_sub[,1:4],
+           grand_tour(),
+           display_xy(col="#EC5C00",
+             half_range=3.8, 
+             axes="bottomleft", cex=2.5),
+           gif_file = "gifs/penguins1.gif",
+           apf = 1/60,
+           frames = 1500,
+           width = 500, 
+           height = 400)
+```
+
+:::: {.columns}
+
+::: {.column width="60%" style="font-size: 40%;" .center}
+
+
+![](gifs/penguins1.gif){width=500 fig-alt="Grand tour showing the 4D penguins data. Two clusters are easily seen, and a third is plausible."}
+
+Data is 4D: $p=4$
+
+Projection is 2D: $d=2$
+
+\begin{eqnarray*}
+A_{~4\times 2} = \left[ \begin{array}{cc}
+a_{~11} & a_{~12} \\
+a_{~21} & a_{~22}\\
+a_{~31} & a_{~32}\\
+a_{~41} & a_{~42}\\
+\end{array} \right]_{~4\times 2}
+\end{eqnarray*}
+
+:::
+
+::: {.column width="30%" style="font-size: 70%;"}
+
+<br>
+How many clusters do you see?
+
+::: {.fragment} 
+
+- three, right?
+- one separated, and two very close,
+- and they each have an elliptical shape.
+
+:::
+::: {.fragment}
+- do you also see an outlier or two?
+
+:::
+
+:::
+
+::::
+
+## Intuitively, tours are like ...
+
+<center>
+<img src="https://dicook.github.io/mulgar_book/images/shadow_puppets.png" width="90%">
+</center>
+
+
+## Anomaly is no longer hidden
+
+:::: {.columns}
+::: {.column}
+
+```{r}
+#| label: invisible
+#| fig-width: 4
+#| fig-height: 4
+#| out-width: 70%
+#| echo: false
+```
+
+:::
+::: {.column}
+<center>
+![](gifs/anomaly2.gif){width=500}
+
+Wait for it!
+</center>
+
+:::
+::::
+
+## How to use a tour in R
+
+:::: {.columns}
+::: {.column style="font-size: 80%;"}
+
+This is a [basic tour]{.orange2}, which will run in your RStudio plot window. 
+
+```{r eval=FALSE}
+library(tourr)
+animate_xy(flea[, 1:6], rescale=TRUE)
+```
+
+::: {.fragment}
+This data has a class variable, `species`. 
+
+::: {.f70}
+```{r}
+flea |> slice_head(n=3)
+```
+:::
+
+Use this to [colour points]{.orange2} with: 
+
+```{r eval=FALSE}
+animate_xy(flea[, 1:6], 
+           col = flea$species, 
+           rescale=TRUE)
+```
+:::
+
+:::
+
+::: {.column style="font-size: 80%;"}
+
+::: {.fragment}
+You can specifically [guide]{.orange2} the tour choice of projections using
+
+```{r eval=FALSE}
+animate_xy(flea[, 1:6], 
+           tour_path = guided_tour(holes()), 
+           col = flea$species, 
+           rescale = TRUE, 
+           sphere = TRUE)
+```
+
+:::
+::: {.fragment}
+and you can [manually]{.orange2} choose a variable to control with:
+
+```{r eval=FALSE}
+set.seed(915)
+animate_xy(flea[, 1:6], 
+           radial_tour(basis_random(6, 2), 
+                       mvar = 6), 
+           rescale = TRUE,
+           col = flea$species)
+```
+:::
+:::
+
+::::
+
+## How to save a tour
+
+:::: {.columns}
+::: {.column}
+
+<center>
+![](gifs/penguins1.gif){width=500 fig-alt="Grand tour showing the 4D penguins data. Two clusters are easily seen, and a third is plausible."}
+</center>
+
+:::
+
+::: {.column}
+[To save as an animated gif:]{.f80}
+
+```{r}
+#| eval: false
+set.seed(645)
+render_gif(penguins_sub[,1:4],
+           grand_tour(),
+           display_xy(col="#EC5C00",
+             half_range=3.8, 
+             axes="bottomleft", cex=2.5),
+           gif_file = "gifs/penguins1.gif",
+           apf = 1/60,
+           frames = 1500,
+           width = 500, 
+           height = 400)
+```
+:::
+::::
+
+## [Your turn]{.orange2}
+
+Use a grand tour on the data set `c1` in the `mulgar` package. What shapes do you see? 
+
+```{r eval=FALSE}
+library(tourr)
+library(mulgar)
+animate_xy(c1)
+```
+
+<br><br>
+Have a look at `c3` or `c7` also. How are the structures different. 
+
+```{r eval=FALSE, echo=FALSE}
+load("data/auswt20.rda")
+animate_xy(auswt20[,6:16], rescale=TRUE)
+```
+
+`r countdown(minutes = 5, seconds = 0)`
+
+## Dimension reduction {.transition .center .center-align}
+
+## What is dimensionality?
+
+```{r}
+#| echo: false
+set.seed(6045)
+x1 <- runif(123)
+x2 <- runif(123)
+x3 <- x1 + rnorm(123, sd=0.1)
+x4 <- rnorm(123, sd=0.2)
+df <- tibble(x1 = (x1-mean(x1))/sd(x1), 
+             x2 = (x2-mean(x2))/sd(x2),
+             x3 = (x3-mean(x3))/sd(x3),
+             x4, 
+             x4scaled = (x4-mean(x4))/sd(x4))
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+dp1 <- ggplot(df) + 
+  geom_point(aes(x=x1, y=x2)) +
+  xlim(-2.5, 2.5) + ylim(-2.5, 2.5) +
+  annotate("segment", x=0, xend=2, y=0, yend=0) +
+  annotate("segment", x=0, xend=0, y=0, yend=2) +
+  annotate("text", x=2.3, y=0, label="x1") +
+  annotate("text", x=0, y=2.3, label="x2") +
+  ggtitle("(a) Fully 2D") +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        panel.grid = element_blank())
+dp2 <- ggplot(df) + 
+  geom_point(aes(x=x1, y=x3)) +
+  xlim(-2.5, 2.5) + ylim(-2.5, 2.5) +
+  annotate("segment", x=0, xend=2, y=0, yend=0) +
+  annotate("segment", x=0, xend=0, y=0, yend=2) +
+  annotate("text", x=2.3, y=0, label="x1") +
+  annotate("text", x=0, y=2.3, label="x3") +
+  ggtitle("(b) Reduced dimension") +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        panel.grid = element_blank())
+dp3 <- ggplot(df) + 
+  geom_point(aes(x=x1, y=x4)) +
+  xlim(-2.5, 2.5) + ylim(-3.5, 3.5) +
+  annotate("segment", x=0, xend=2, y=0, yend=0) +
+  annotate("segment", x=0, xend=0, y=0, yend=3) +
+  annotate("text", x=2.3, y=0, label="x1") +
+  annotate("text", x=0, y=3.3, label="x4") +
+  ggtitle("(c) Reduced variance") +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        panel.grid = element_blank())
+dp4 <- ggplot(df) + 
+  geom_point(aes(x=x1, y=x4scaled)) +
+  xlim(-2.5, 2.5) + ylim(-3.5, 3.5) +
+  annotate("segment", x=0, xend=2, y=0, yend=0) +
+  annotate("segment", x=0, xend=0, y=0, yend=3) +
+  annotate("text", x=2.3, y=0, label="x1") +
+  annotate("text", x=0, y=3.3, label="x4") +
+  ggtitle("(d) Rescaled") +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        panel.grid = element_blank())
+```
+
+```{r}
+#| echo: false
+#| fig-width: 9
+#| fig-height: 3
+#| out-width: 100%
+dp1 + dp2 + dp3 + dp4 + plot_layout(ncol=4)
+```
+
+When an axis extends out of a direction where the points are collapsed, it means that this variable is partially responsible for the reduced dimension.
+
+## In high-dimensions
+
+:::: {.columns}
+::: {.column width=33%}
+<center>
+![2D plane in 5D](https://dicook.github.io/mulgar_book/gifs/plane.gif){width=300}
+</center>
+:::
+
+::: {.column width=33%}
+::: {.fragment}
+<center>
+![3D plane in 5D](https://dicook.github.io/mulgar_book/gifs/box.gif){width=300}
+</center>
+:::
+:::
+
+::: {.column width=33%}
+::: {.fragment}
+<center>
+![5D plane in 5D](https://dicook.github.io/mulgar_book/gifs/cube5d.gif){width=300}
+</center>
+:::
+:::
+::::
+
+::: {.fragment}
+Principal component analysis (PCA) will detect these dimensionalities.
+:::
+
+## Example: womens' track records [(1/3)]{.f70}
+
+:::: {.columns}
+::: {.column}
+
+```{r echo=FALSE}
+track <- read_csv("https://raw.githubusercontent.com/numbats/iml/master/data/womens_track.csv")
+```
+
+
+```{r}
+#| echo: false
+#| out.width: "100%"
+#| fig.width: 8
+#| fig.height: 8
+ggscatmat(track[,1:7])
+```
+
+[*Source*: Johnson and Wichern, Applied multivariate analysis]{.f50}
+
+
+:::
+
+::: {.column}
+
+::: {.fragment}
+
+```{r eval=FALSE}
+#| echo: false
+render_gif(track[,1:7], 
+           grand_tour(),
+           display_xy(col="#EC5C00",
+             cex=2),
+           rescale=TRUE,
+           gif_file = "gifs/track.gif",
+           apf = 1/30,
+           frames = 1500,
+           width = 400, 
+           height = 400)
+```
+
+<center>
+![](gifs/track.gif){width=600}
+</center>
+
+:::
+:::
+::::
+
+## Example: PCA summary [(2/3)]{.f70}
+
+:::: {.columns}
+::: {.column}
+
+```{r echo=FALSE}
+options(digits=2)
+track_pca <- prcomp(track[,1:7], center=TRUE, scale=TRUE)
+```
+
+Variances/eigenvalues
+
+```{r echo=FALSE}
+track_pca$sdev^2
+```
+
+Component coefficients
+
+```{r echo=FALSE}
+track_pca$rotation[,1:4]
+```
+:::
+::: {.column}
+
+How many PCs?
+
+```{r echo=FALSE}
+ggscree(track_pca, q=7)
+```
+:::
+::::
+
+## Example: Visualise [(3/3)]{.f70}
+
+:::: {.columns}
+::: {.column}
+
+[Biplot: data in the model space]{.f70}
+
+```{r}
+#| echo: false
+#| out-width: 100%
+#| fig-width: 5
+#| fig-height: 5
+library(ggfortify)
+autoplot(track_pca, loadings=TRUE, loadings.label=TRUE)
+```
+
+:::
+::: {.column}
+[2D model in data space]{.f70}
+
+<center>
+![](gifs/track_model.gif){width=350}
+</center>
+
+```{r echo=FALSE, eval=FALSE}
+track_std <- track |>   
+  mutate_if(is.numeric, function(x) (x-
+      mean(x, na.rm=TRUE))/
+      sd(x, na.rm=TRUE))
+track_std_pca <- prcomp(track_std[,1:7], 
+               scale = FALSE, 
+               retx=TRUE)
+```
+
+::: {.f60}
+```{r eval=FALSE}
+track_model <- mulgar::pca_model(track_std_pca, d=2, s=2)
+track_all <- rbind(track_model$points, track_std[,1:7])
+animate_xy(track_all, edges=track_model$edges,
+           edges.col="#E7950F", 
+           edges.width=3, 
+           axes="off")
+```
+:::
+
+```{r echo=FALSE, eval=FALSE}
+render_gif(track_all, 
+           grand_tour(), 
+           display_xy(
+                      edges=track_model$edges, 
+                      edges.col="#E7950F", 
+                      edges.width=3, 
+                      axes="off", 
+                      half_range = 5),
+           gif_file="gifs/track_model.gif",
+           frames=500,
+           width=400,
+           height=400,
+           loop=FALSE)
+```
+
+
+
+:::
+::::
+
+## Non-linear dimension reduction [(1/2)]{.f70}
+
+:::: {.columns}
+::: {.column .f60}
+
+Find some low-dimensional layout of points which approximates the distance between points in high-dimensions, with the purpose being to have a [useful representation that reveals high-dimensional patterns]{.orange2}, like clusters.
+
+[Multidimensional scaling (MDS)]{.blue2} is the original approach:
+
+$$
+\mbox{Stress}_D(x_1, ..., x_n) = \left(\sum_{i, j=1; i\neq j}^n (d_{ij} - d_k(i,j))^2\right)^{1/2}
+$$
+where $D$ is an $n\times n$ matrix of distances $(d_{ij})$ between all pairs of points, and $d_k(i,j)$ is the distance between the points in the low-dimensional space.
+
+:::
+::: {.column .f60}
+PCA is a special case of MDS. The result from PCA is a linear projection, but generally MDS can provide some non-linear transformation. 
+
+Many variations being developed:
+
+- [t-stochastic neighbourhood embedding (t-SNE)]{.blue2}: compares interpoint distances with a standard probability distribution (eg $t$-distribution) to exaggerate local neighbourhood differences.
+- [uniform manifold approximation and projection (UMAP)]{.blue2}: compares the interpoint distances with what might be expected if the data was uniformly distributed in the high-dimensions. 
+
+NLDR can be useful but it can also make some misleading representations.
+
+:::
+:::: 
+
+## Non-linear dimension reduction [(2/2)]{.f70}
+
+:::: {.columns}
+::: {.column}
+
+<center>
+[UMAP 2D representation]{.f70}
+</center>
+
+```{r}
+#| label: penguins-umap
+#| message: false
+#| echo: false
+#| fig-width: 4
+#| fig-height: 4
+#| out-width: 70%
+library(uwot)
+p_tidy_std <- p_tidy |> 
+  na.omit() |>
+  mutate_if(is.numeric, function(x) (x-mean(x))/sd(x))
+
+set.seed(253)
+p_tidy_umap <- umap(p_tidy_std[,2:5], init = "spca")
+p_tidy_umap_df <- p_tidy_umap |>
+  as_tibble() |>
+  rename(UMAP1 = V1, UMAP2 = V2) 
+ggplot(p_tidy_umap_df, aes(x = UMAP1, 
+                           y = UMAP2)) +
+  geom_point(colour = "#EC5C00") 
+```
+
+::: {.f70}
+```{r eval=FALSE}
+library(uwot)
+set.seed(253)
+p_tidy_umap <- umap(p_tidy_std[,2:5], init = "spca")
+```
+:::
+
+:::
+
+::: {.column}
+
+<center>
+[Tour animation of the same data]{.f70}
+
+![](gifs/penguins1.gif){width=500 fig-alt="Grand tour showing the 4D penguins data. Two clusters are easily seen, and a third is plausible."}
+</center>
+
+:::
+
+::::
+
+
+
+## [Your turn]{.orange2}
+
+::: {style="font-size: 70%;"}
+Which is the best representation, t-SNE or UMAP, of this 9D data?
+
+```{r}
+#| label: pbmc
+#| message: false
+#| eval: true
+#| echo: false
+#| fig-width: 9
+#| fig-height: 4
+#| out-width: 70%
+pbmc <- readRDS("data/pbmc_pca_50.rds")
+
+# t-SNE
+set.seed(1041)
+p_tsne <- Rtsne::Rtsne(pbmc[,1:9])
+p_tsne_df <- data.frame(tsneX = p_tsne$Y[, 1], tsneY = p_tsne$Y[, 2])
+p1 <- ggplot(p_tsne_df, aes(x=tsneX, y=tsneY)) + geom_point()
+
+# UMAP
+set.seed(1045)
+p_umap <- uwot::umap(pbmc[,1:9])
+p_umap_df <- data.frame(umapX = p_umap[, 1], umapY = p_umap[, 2])
+p2 <- ggplot(p_umap_df, aes(x=umapX, y=umapY)) + geom_point()
+
+p1 + p2 + plot_layout(ncol=2)
+```
+
+You can use this code to read the data and view in a tour:
+
+```{r echo=TRUE, eval=FALSE}
+pbmc <- readRDS("data/pbmc_pca_50.rds")
+animate_xy(pbmc[,1:9])
+```
+:::
+
+`r countdown(minutes = 5, seconds = 0)`
+
+## Key conceptual points
+
+- Avoid misinterpretation, by using your high-dimensional visualisation skills to look at the **data as a whole**.
+- Examine model fit by by examining the model overlaid on the data, **model-in-the-data-space**. [([Wickham et al (2015) Removing the Blindfold](http://onlinelibrary.wiley.com/doi/10.1002/sam.11271/abstract))]{.f70}
+
+## End of session 1 {.transition .center}
+
+<a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+ 

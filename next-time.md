@@ -1,0 +1,1 @@
+- detourr code for checking LDA doesn't work
