@@ -15,6 +15,7 @@ library(randomForest)
 library(crosstalk)
 library(plotly)
 library(viridis)
+library(RColorBrewer)
 library(conflicted)
 
 # General R options
@@ -63,13 +64,14 @@ detour_plot <- detour(p_cl_shared, tour_aes(
   tour_path(grand_tour(2),
             max_bases=50, fps = 60) |>
   show_scatter(alpha = 0.9, axes = FALSE,
-               width = "100%", height = "450px")
+               width = "100%", height = "450px",
+               palette = brewer.pal(3, "Dark2"))
 
 conf_mat <- plot_ly(p_cl_shared,
                     x = ~psp_jit,
                     y = ~sp_jit,
                     color = ~species,
-                    colors = viridis_pal(option = "D")(3),
+                    colors = brewer.pal(3, "Dark2"),
                     height = 450) |>
   highlight(on = "plotly_selected",
             off = "plotly_doubleclick") %>%
