@@ -695,7 +695,8 @@ render_gif(penguins_sub[,1:4],
 
 Use a grand tour on the data set `c1` in the `mulgar` package. What shapes do you see? 
 
-```{r eval=FALSE}
+```{r}
+#| eval: false
 library(tourr)
 library(mulgar)
 animate_xy(c1)
@@ -705,9 +706,12 @@ animate_xy(c1)
 Have a look at `c3` or `c7` also. How are the structures different. 
 
 ```{r eval=FALSE, echo=FALSE}
+#| eval: false
+#| echo: false
 load("data/auswt20.rda")
 animate_xy(auswt20[,6:16], rescale=TRUE)
 ```
+
 
 `r countdown(minutes = 5, seconds = 0)`
 
@@ -1085,7 +1089,9 @@ p1 + p2 + plot_layout(ncol=2)
 
 You can use this code to read the data and view in a tour:
 
-```{r echo=TRUE, eval=FALSE}
+```{r}
+#| echo: true
+#| eval: false
 pbmc <- readRDS("data/pbmc_pca_50.rds")
 animate_xy(pbmc[,1:9])
 ```

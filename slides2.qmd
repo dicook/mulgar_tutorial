@@ -594,7 +594,7 @@ library(crosstalk)
 library(plotly)
 library(viridis)
 p_cl <- p_tidy_std |>
-  mutate(pspecies = predict(p_lda, p_tidy_std)$class) |>
+  mutate(pspecies = predict(p_lda, p_tidy)$class) |>
   dplyr::select(bl:bm, species, pspecies) |>
   mutate(sp_jit = jitter(as.numeric(species), 0.5),
          psp_jit = jitter(as.numeric(pspecies), 0.5))
