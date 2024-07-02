@@ -827,6 +827,52 @@ When an axis extends out of a direction where the points are collapsed, it means
 Principal component analysis (PCA) will detect these dimensionalities.
 :::
 
+## Some it is basically univariate
+
+:::: {.columns}
+::: {.column width=50%}
+
+```{r}
+#| eval: false
+#| echo: false
+# Getting a sample of data for illustration
+# from large data set used for 2024 ETC3250
+water <- read_csv("data/water_train.csv") |>
+  arrange(status_id) 
+water <- water[c(sample(1:24893, 1000), sample(24894:65012, 1000)),]
+water <- water[,-c(1, 2, 3, 4, 5, 6, 14, 17, 18, 19)]
+colnames(water) <- paste0("x", 1:10)
+write_csv(water, file="data/water.csv")
+```
+
+```{r}
+#| echo: false
+water <- read_csv("data/water.csv")
+ggscatmat(water, alpha=0.5) + theme(axis.text = element_blank())
+```
+:::
+
+::: {.column width=50% style="font-size: 70%;"}
+
+```{r echo=FALSE, eval=FALSE}
+render_gif(water, 
+           grand_tour(), 
+           display_xy(),
+           gif_file="gifs/water.gif",
+           rescale = TRUE,
+           frames=500,
+           width=400,
+           height=400,
+           loop=FALSE)
+```
+<center>
+![](gifs/water.gif)
+
+Mostly skewed variables, some outliers, without much association. 
+</center>
+:::
+::::
+
 ## Example: womens' track records [(1/3)]{.f70}
 
 :::: {.columns}

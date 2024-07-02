@@ -42,7 +42,7 @@ Background: Participants should have a good working knowledge of R, and some bac
 install.packages(c("readr", "tidyr", "dplyr", "ggplot2", "tourr",
   "mulgar", "geozoo", "detourr", "palmerpenguins", "GGally", 
   "MASS", "randomForest", "mclust", "crosstalk", "plotly", 
-  "viridis", "conflicted"), dependencies=c("Depends", "Imports"))
+  "viridis", "conflicted", "RColorBrewer"), dependencies=c("Depends", "Imports"))
 ```
 
 Ideally, you install this package from GitHub:
