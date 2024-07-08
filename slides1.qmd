@@ -827,7 +827,7 @@ When an axis extends out of a direction where the points are collapsed, it means
 Principal component analysis (PCA) will detect these dimensionalities.
 :::
 
-## Some it is basically univariate
+## Some data is basically univariate
 
 :::: {.columns}
 ::: {.column width=50%}
