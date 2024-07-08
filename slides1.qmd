@@ -77,10 +77,10 @@ p_tidy_std <- p_tidy |>
 
 ```{r echo=FALSE}
 plan <- tribble(~time, ~topic,
-                "1:00-1:20", "Introduction: What is high-dimensional data, why visualise and overview of methods",
-                "1:20-1:45", "Basics of linear projections, and recognising high-d structure", 
-                "1:45-2:30", "Effectively reducing your data dimension, in association with non-linear dimension reduction",
-                "2:30-3:00", "BREAK")
+                "9:00-9:20", "Introduction: What is high-dimensional data, why visualise and overview of methods",
+                "9:20-9:45", "Basics of linear projections, and recognising high-d structure", 
+                "9:45-10:30", "Effectively reducing your data dimension, in association with non-linear dimension reduction",
+                "10:30-11:00", "BREAK")
 knitr::kable(plan)
 ```
 
