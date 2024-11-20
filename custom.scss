@@ -80,3 +80,15 @@ a:hover {
 li a:active {
   color: #3B99B1;
 }
+
+pre, code, .sourceCode {
+  font-size: 1.1em;
+}
+
+.reveal pre {
+  font-size: 0.8rem !important;
+}
+
+.reveal code {
+  font-size: 1.2em !important;
+}

@@ -8,12 +8,9 @@ This is for scientists and data science practitioners who regularly work with hi
 
 Background: Participants should have a good working knowledge of R, and some background in multivariate statistical methods and/or data mining techniques.
 
-**Presenters**: 
+**Presenter**: 
 
 Dianne Cook is Professor of Statistics at Monash University in Melbourne, Australia. Her research is on visualisation of high-dimensional data, and on bridging the gap between exploratory graphics and statistical inference. She is a Fellow of the American Statistical Association, past editor of the Journal of Computational and Graphical Statistics, and the R Journal, Member of the R Foundation, and elected member of the International Statistical Institute, and author of several R packages.
-
-Ursula Laa is an Assistant Professor at the Institute of Statistics of the University of Natural Resources and Life Sciences in Vienna. She works on new methods for the visualization of multivariate data and models, and on interdisciplinary applications of statistics and data science methods in different fields.
-
 
 ## Structure of tutorial
 
@@ -21,12 +18,14 @@ Background: Participants should have a good working knowledge of R, and some bac
 
 | time | topic |
 |------|-------|
-|9:00-9:20|	Introduction: What is high-dimensional data, why visualise and overview of methods| 
-|9:20-9:45|	Basics of linear projections, and recognising high-d structure|
-|9:45-10:30|	Effectively reducing your data dimension, in association with non-linear dimension reduction|
-|10:30-11:00|	BREAK|
-|11:00-11:45|	Understanding clusters in data using visualisation|
-|11:45-12:30|	Building better classification models with visual input|
+|1:30-1:50|	Introduction: What is high-dimensional data, why visualise and overview of methods| 
+|1:50-2:10|	Basics of linear projections, and recognising high-d structure|
+|2:10-2:30|	Effectively reducing your data dimension, in association with non-linear dimension reduction|
+|2:30-3:00|	Afternoon tea|
+|3:00-3:15|	More on dimension reduction|
+|3:15-4:00|	Understanding clusters in data using visualisation|
+|4:00-4:40|	Building better classification models with visual input|
+|4:40-5:00|	Bring your own data!|
 
 [Session 1 Slides](https://dicook.github.io/mulgar_tutorial/slides1.html)
 
@@ -36,7 +35,7 @@ Background: Participants should have a good working knowledge of R, and some bac
 
 ## Getting started
 
-1. You should have a reasonably up-to-date version of R and R Studio, eg RStudio 2024.04.1 and R version 4.4.0 (2024-04-24). Install the following packages, and their dependencies.
+1. You should have a reasonably up-to-date version of R and R Studio, eg RStudio 2024.09.1 and at least R version 4.4.0 (2024-04-24). Install the following packages, and their dependencies.
 
 ```
 install.packages(c("readr", "tidyr", "dplyr", "ggplot2", "tourr",

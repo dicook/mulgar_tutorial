@@ -1,7 +1,7 @@
 ---
 title: "Visualising High-dimensional Data with R"
 subtitle: "Session 1"
-author: "Dianne Cook, Monash University <br>  Ursula Laa, BOKU"
+author: "Dianne Cook, Monash University"
 format:
   revealjs: 
     theme: 
@@ -77,11 +77,12 @@ p_tidy_std <- p_tidy |>
 
 ```{r echo=FALSE}
 plan <- tribble(~time, ~topic,
-                "9:00-9:20", "Introduction: What is high-dimensional data, why visualise and overview of methods",
-                "9:20-9:45", "Basics of linear projections, and recognising high-d structure", 
-                "9:45-10:30", "Effectively reducing your data dimension, in association with non-linear dimension reduction",
-                "10:30-11:00", "BREAK")
-knitr::kable(plan)
+                "1:30-1:40", "Introduction: What is high-dimensional data, why visualise and overview of methods",
+                "1:50-2:10", "Basics of linear projections, and recognising high-d structure", 
+                "2:10-2:30", "Effectively reducing your data dimension, in association with non-linear dimension reduction",
+                "2:30-3:00", "BREAK")
+knitr::kable(plan) |>
+  kableExtra::column_spec(1, "5cm")
 ```
 
 ## Introduction {.transition .center .center-align}
@@ -601,7 +602,7 @@ Wait for it!
 ## How to use a tour in R
 
 :::: {.columns}
-::: {.column style="font-size: 80%;"}
+::: {.column style="font-size: 70%;"}
 
 This is a [basic tour]{.orange2}, which will run in your RStudio plot window. 
 
@@ -613,7 +614,7 @@ animate_xy(flea[, 1:6], rescale=TRUE)
 ::: {.fragment}
 This data has a class variable, `species`. 
 
-::: {.f70}
+::: {.f60}
 ```{r}
 flea |> slice_head(n=3)
 ```
@@ -630,7 +631,7 @@ animate_xy(flea[, 1:6],
 
 :::
 
-::: {.column style="font-size: 80%;"}
+::: {.column style="font-size: 70%;"}
 
 ::: {.fragment}
 You can specifically [guide]{.orange2} the tour choice of projections using
@@ -1020,130 +1021,6 @@ render_gif(track_all,
 :::
 ::::
 
-## Non-linear dimension reduction [(1/2)]{.f70}
-
-:::: {.columns}
-::: {.column .f60}
-
-Find some low-dimensional layout of points which approximates the distance between points in high-dimensions, with the purpose being to have a [useful representation that reveals high-dimensional patterns]{.orange2}, like clusters.
-
-[Multidimensional scaling (MDS)]{.blue2} is the original approach:
-
-$$
-\mbox{Stress}_D(x_1, ..., x_n) = \left(\sum_{i, j=1; i\neq j}^n (d_{ij} - d_k(i,j))^2\right)^{1/2}
-$$
-where $D$ is an $n\times n$ matrix of distances $(d_{ij})$ between all pairs of points, and $d_k(i,j)$ is the distance between the points in the low-dimensional space.
-
-:::
-::: {.column .f60}
-PCA is a special case of MDS. The result from PCA is a linear projection, but generally MDS can provide some non-linear transformation. 
-
-Many variations being developed:
-
-- [t-stochastic neighbourhood embedding (t-SNE)]{.blue2}: compares interpoint distances with a standard probability distribution (eg $t$-distribution) to exaggerate local neighbourhood differences.
-- [uniform manifold approximation and projection (UMAP)]{.blue2}: compares the interpoint distances with what might be expected if the data was uniformly distributed in the high-dimensions. 
-
-NLDR can be useful but it can also make some misleading representations.
-
-:::
-:::: 
-
-## Non-linear dimension reduction [(2/2)]{.f70}
-
-:::: {.columns}
-::: {.column}
-
-<center>
-[UMAP 2D representation]{.f70}
-</center>
-
-```{r}
-#| label: penguins-umap
-#| message: false
-#| echo: false
-#| fig-width: 4
-#| fig-height: 4
-#| out-width: 70%
-library(uwot)
-p_tidy_std <- p_tidy |> 
-  na.omit() |>
-  mutate_if(is.numeric, function(x) (x-mean(x))/sd(x))
-
-set.seed(253)
-p_tidy_umap <- umap(p_tidy_std[,2:5], init = "spca")
-p_tidy_umap_df <- p_tidy_umap |>
-  as_tibble() |>
-  rename(UMAP1 = V1, UMAP2 = V2) 
-ggplot(p_tidy_umap_df, aes(x = UMAP1, 
-                           y = UMAP2)) +
-  geom_point(colour = "#EC5C00") 
-```
-
-::: {.f70}
-```{r eval=FALSE}
-library(uwot)
-set.seed(253)
-p_tidy_umap <- umap(p_tidy_std[,2:5], init = "spca")
-```
-:::
-
-:::
-
-::: {.column}
-
-<center>
-[Tour animation of the same data]{.f70}
-
-![](gifs/penguins1.gif){width=500 fig-alt="Grand tour showing the 4D penguins data. Two clusters are easily seen, and a third is plausible."}
-</center>
-
-:::
-
-::::
-
-
-
-## [Your turn]{.orange2}
-
-::: {style="font-size: 70%;"}
-Which is the best representation, t-SNE or UMAP, of this 9D data?
-
-```{r}
-#| label: pbmc
-#| message: false
-#| eval: true
-#| echo: false
-#| fig-width: 9
-#| fig-height: 4
-#| out-width: 70%
-pbmc <- readRDS("data/pbmc_pca_50.rds")
-
-# t-SNE
-set.seed(1041)
-p_tsne <- Rtsne::Rtsne(pbmc[,1:9])
-p_tsne_df <- data.frame(tsneX = p_tsne$Y[, 1], tsneY = p_tsne$Y[, 2])
-p1 <- ggplot(p_tsne_df, aes(x=tsneX, y=tsneY)) + geom_point()
-
-# UMAP
-set.seed(1045)
-p_umap <- uwot::umap(pbmc[,1:9])
-p_umap_df <- data.frame(umapX = p_umap[, 1], umapY = p_umap[, 2])
-p2 <- ggplot(p_umap_df, aes(x=umapX, y=umapY)) + geom_point()
-
-p1 + p2 + plot_layout(ncol=2)
-```
-
-You can use this code to read the data and view in a tour:
-
-```{r}
-#| echo: true
-#| eval: false
-pbmc <- readRDS("data/pbmc_pca_50.rds")
-animate_xy(pbmc[,1:9])
-```
-:::
-
-`r countdown(minutes = 5, seconds = 0)`
 
 ## Key conceptual points
 
